@@ -1,7 +1,20 @@
 import { tw } from "typewind";
 import Header from "../../components/Header";
+import { MdChevronLeft, MdChevronRight } from "react-icons/md"
 
 export function IndexPage() {
+  const slideLeft = () => {
+    const slider = document.getElementById('slider')
+    if (slider !== null){
+    slider.scrollLeft = slider?.scrollLeft - 500;
+  }
+  }
+  const slideRight = () => {
+    const slider = document.getElementById('slider')
+    if (slider !== null){
+    slider.scrollLeft = slider?.scrollLeft + 500;
+  }
+  }
   return (
     <>
     <div
@@ -42,7 +55,9 @@ export function IndexPage() {
     </div>
     <div className={tw.flex.flex_col.space_y_8.px_4.h_screen.w_full.bg_blackS1}>
         <span className={tw.text_5xl.text_primaryPink.tracking_tighter.font_bold.mt_4}>WE PROVIDE</span>
-       <div className={tw.flex.flex_row.space_x_10.space_y_0.overflow_x_auto.w_full.text_white}>
+        <div className={tw.flex.relative.items_center.space_x_2}>
+          <MdChevronLeft onClick={slideLeft} size={40} className={tw.text_primaryPink}/>
+       <div id= 'slider' className={tw.flex.flex_row.space_x_10.space_y_0.overflow_x_auto.w_full.text_white.scrollbar_hide}>
           
              <div className={tw.border_2.border_white.rounded_xl.h_['580px'].min_w_['400px']}>
                 <div className={tw.h_['320px'].w_full}><img src="../../../public/Hero.jpg"/></div>
@@ -79,6 +94,8 @@ export function IndexPage() {
                     <span className={tw.text_white.tracking_tighter.text_sm.text_center}>Immerse yourself in daily reflections with our digital journal feature. Capture fleeting thoughts, dreams, and musings in your own private sanctuary. Your personal space for self-discovery and expression.</span>
                 </div>
             </div> 
+        </div>
+        <MdChevronRight onClick={slideRight} size={40} className={tw.text_primaryPink}/>
         </div>
     </div>
     </>

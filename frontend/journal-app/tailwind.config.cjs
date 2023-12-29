@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* eslint-disable @typescript-eslint/no-var-requires */
+// eslint-disable-next-line no-undef
 const { typewindTransforms } = require("typewind/transform");
 
 /** @type {import('tailwindcss').Config} */
@@ -35,5 +38,8 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // eslint-disable-next-line no-undef
+    require('tailwind-scrollbar-hide')
+  ],
 };
