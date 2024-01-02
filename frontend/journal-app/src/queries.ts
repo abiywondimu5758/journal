@@ -20,7 +20,7 @@ export const useLogin = (): {
   const existingRefreshToken = cookies.get("refresh_token");
   const isLoggedIn = Boolean(existingAccessToken && existingRefreshToken);
 
-  const loginMutation = useMutation(
+  const loginMutation = useMutation<LoginResponse, unknown, { username: string; password: string }>(
     (credentials: { username: string; password: string }) => {
       if (isLoggedIn) {
         // User is already logged in, return the existing tokens
@@ -28,21 +28,25 @@ export const useLogin = (): {
       }
 
       // User is not logged in, send the login request
-      return fetch('http://127.0.0.1:8000/api/v1/token/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error('Login failed'); // Handle non-2xx responses if needed
-        }
-        return response.json();
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          fetch('http://127.0.0.1:8000/api/v1/token/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+          }).then((response) => {
+            if (!response.ok) {
+              reject(new Error('Login failed')); // Handle non-2xx responses if needed
+            }
+            resolve(response.json());
+          });
+        }, 2000); // Delay for 2 seconds, adjust as needed
       });
     },
     {
-      onSuccess: (data) => {
+      onSuccess: (data:LoginResponse) => {
         console.log('Login successful');
 
         // Set cookies
@@ -65,16 +69,25 @@ export const useRegister = () => {
     password: string;
 
     // Add other registration fields as needed
-  }) =>
+  }) =>new Promise((resolve, reject) => {
+    setTimeout(() => {
     fetch('http://127.0.0.1:8000/api/v1/register/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(userData),
-    }).then((response) => response.json())
+    }).then((response) => {
+      if (!response.ok) {
+        reject(new Error('Login failed')); // Handle non-2xx responses if needed
+      }
+      resolve(response.json());
+    });
+    
+  }, 2000); // Delay for 2 seconds, adjust as needed
+})
   );
-
+    console.log(registerMutation)
   return registerMutation;
 };
 
