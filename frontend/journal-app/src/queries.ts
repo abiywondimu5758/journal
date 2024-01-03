@@ -222,3 +222,43 @@ export const usePutEntry = () => {
     }
   );
 };
+
+
+export const usePostEntry = () => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    async (updatedEntry: { title: string; content: string }) => {
+      const accessToken = cookies.get("access_token");
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      return new Promise((resolve, reject) => {
+        // Simulate a delay of 3 seconds
+        setTimeout(async () => {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/v1/entries/`, // Make sure to include the entry ID or whatever identifier is needed
+            {
+              method: "POST",
+              headers,
+              body: JSON.stringify(updatedEntry),
+            }
+          );
+
+          if (!response.ok) {
+            reject(new Error("Failed to update entry"));
+          }
+
+          resolve(response.json());
+        }, 3000); // 3-second delay
+      });
+    },
+    {
+      onSuccess: () => {
+        // Invalidate and refetch the 'entries' query after successful update
+        queryClient.invalidateQueries("entries");
+      },
+    }
+  );
+};

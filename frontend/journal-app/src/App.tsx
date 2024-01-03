@@ -11,6 +11,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import MuiTheme from "./MuiTheme";
 import Entries from "./pages/entries";
+import CreateEntries from "./pages/Journal/CreateEntries";
 
 function App() {
   const preferedSettings = useMediaQuery("(prefers-color-scheme: dark)");
@@ -35,6 +36,7 @@ function App() {
             element={<Dashboard mode={mode} setMode={handleModeChange} />}
           />
           <Route path="entries/:id" element={<EntryDetail />} />
+          <Route path="/createEntries" element={<CreateEntries />} />
 
           {/* <Route path="/forgot-password" element={<ForgotPassword />} />
          <Route path="/change-password" element={<ChangePassword />} /> */}

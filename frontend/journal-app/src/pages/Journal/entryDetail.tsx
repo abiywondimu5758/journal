@@ -135,7 +135,7 @@ const EndDrawer = styled(MuiDrawer, {
 
 const EntryDetail: React.FC = () => {
   const [open, setOpen] = useState(true);
-  const [open2, setOpen2] = useState(true);
+  const [open2, setOpen2] = useState(false);
 
   const [editingMode, setEditingMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
@@ -237,7 +237,7 @@ const EntryDetail: React.FC = () => {
       setIsEditError(true);
       <Snackbar open={isEditError} autoHideDuration={6}>
       <Alert severity="error" sx={{ width: "100%" }}>
-        Couldn't Delete Entry!
+        Couldn't Edit Entry!
       </Alert>
     </Snackbar>
     }
@@ -347,15 +347,7 @@ const EntryDetail: React.FC = () => {
       </EndDrawer>
       <Content theme={undefined as never} drawerOpen={open2} className="h-full w-full">
       <div className="w-full h-screen py-20 px-20">
-      {/* <div>
-      <div id="toolbar">
-        
-        <button className="ql-bold">Bold</button>
-        <button className="ql-italic">Italic</button>
-        
-      </div>
-      <div id="editor" ></div>
-    </div> */}
+
     <ReactQuill value = {editedContent} onChange={setEditedContent}  readOnly={!editingMode}className="h-full"/>
       </div>
       </Content>
