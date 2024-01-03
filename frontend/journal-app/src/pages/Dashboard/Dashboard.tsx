@@ -1,6 +1,5 @@
 import * as React from "react";
-import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
+import { styled } from "@mui/material/styles";
 import MuiDrawer from "@mui/material/Drawer";
 import Box from "@mui/material/Box";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
@@ -10,27 +9,32 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
-// import Link from "@mui/material/Link";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { mainListItems, secondaryListItems } from "./listItems";
+import { mainListItemsData, secondaryListItemsData } from "./listItems";
 
-import { Avatar, Switch } from "@mui/material";
-// import { tw } from "typewind";
+import { Avatar, Container, ListItemButton, ListItemIcon, ListItemText, Switch } from "@mui/material";
+import { useState } from "react";
+import DashboardContent from "./DashboardContent";
+import JournalContent from "../Journal";
+import { tw } from "typewind";
 
-// function Copyright() {
-//   return (
-//     <Typography variant="body2" color="text.secondary" align="center">
-//       {"Copyright © "}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{" "}
-//       {new Date().getFullYear()}
-//       {"."}
-//     </Typography>
-//   );
-// }
+interface listItem {
+  primary: string;
+  icon: JSX.Element;
+}
+
+function Copyright() {
+  return (
+    <Typography variant="body2" color="text.secondary" align="center">
+      {"Copyright © "}
+
+      {new Date().getFullYear()}
+      {"."}
+    </Typography>
+  );
+}
 
 const drawerWidth: number = 240;
 
@@ -87,26 +91,36 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-// TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
-
 export default function Dashboard({ mode, setMode }: props) {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
+  const [selectedItem, setSelectedItem] = useState("Dashboard");
   const toggleDrawer = () => {
     setOpen(!open);
   };
 
+  const renderComponent = () => {
+    switch (selectedItem) {
+      case "Dashboard":
+        return <DashboardContent />;
+      case "Journal":
+        return <JournalContent />;
+      // case "Books":
+      //   return <BooksContent />;
+      // Add more cases for other menu items
+      default:
+        return null;
+    }
+  };
+
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <>
       <Box sx={{ display: "flex" }}>
-        <CssBaseline />
         <AppBar position="absolute" open={open}>
           <Toolbar
             sx={{
-              pr: "24px", // keep right padding when drawer closed
-              backgroundColor: "#FF007A",
+              pr: "24px",
+              // backgroundColor: 'primary'
             }}
-            // className={tw.bg_black}
           >
             <IconButton
               edge="start"
@@ -137,7 +151,7 @@ export default function Dashboard({ mode, setMode }: props) {
 
             <Avatar
               alt="Remy Sharp"
-              src="/static/images/avatar/1.jpg"
+              src="/Hero.jpg"
               sx={{ width: 30, height: 30, marginLeft: "6px" }}
             />
             <Switch
@@ -163,24 +177,44 @@ export default function Dashboard({ mode, setMode }: props) {
           </Toolbar>
           <Divider />
           <List component="nav">
-            {mainListItems}
+          {mainListItemsData.map((item:listItem) => (
+              <ListItemButton
+                key={item.primary}
+                onClick={() => setSelectedItem(item.primary)}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.primary} />
+              </ListItemButton>
+            ))}
             <Divider sx={{ my: 1 }} />
-            {secondaryListItems}
+            {secondaryListItemsData.map((item:listItem) => (
+              <ListItemButton
+                key={item.primary}
+                onClick={() => setSelectedItem(item.primary)}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.primary} />
+              </ListItemButton>
+            ))}
           </List>
         </Drawer>
         <Box
           component="main"
           sx={{
             backgroundColor: (theme) =>
-              theme.palette.mode === "dark"
-                ? 'primary'
+              theme.palette.mode === "light"
+                ? theme.palette.grey[100]
                 : theme.palette.grey[900],
             flexGrow: 1,
             height: "100vh",
             overflow: "auto",
           }}
-        ></Box>
+          
+        >
+          <Container className={tw.p_24}>{renderComponent()}</Container>
+          <Copyright />
+        </Box>
       </Box>
-    </ThemeProvider>
+    </>
   );
 }

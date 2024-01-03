@@ -1,9 +1,10 @@
 import { createTheme } from "@mui/material";
 
-const MuiTheme = () => {
+const MuiTheme = (mode:boolean) => {
+  console.log(mode);
   return createTheme({
     palette: {
-      mode:  "dark",
+      mode:  mode? "dark":"light",
       primary: {
         main: "#FF007A",
         light:"#FF007A",
