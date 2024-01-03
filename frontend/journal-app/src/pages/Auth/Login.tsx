@@ -36,7 +36,7 @@ const Login = () => {
   React.useEffect(() => {
     // Check the condition and redirect if necessary
     if (isLoggedIn) {
-      navigate("/entries");
+      navigate("/dashboard");
     }
   }, [isLoggedIn, navigate]);
   const handleLogin = () => {
