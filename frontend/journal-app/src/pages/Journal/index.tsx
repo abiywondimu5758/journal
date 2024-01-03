@@ -36,12 +36,12 @@ const JournalContent = () => {
   const { data: entries, isLoading, isError } = useEntries();
   const deleteEntryMutation = useDeleteEntry();
   const [isDelError,setIsDelError] = useState<boolean>(false);
-  const [isSucError,setIsSucError] = useState<boolean>(false);
+  const [isSuccess,setIsSuccess] = useState<boolean>(false);
 
   const handleDelete = async (entryId: number) => {
     try {
       await (await deleteEntryMutation).mutateAsync(entryId).then(()=>{
-        setIsSucError(true);
+        setIsSuccess(true);
 
       });
 
@@ -113,7 +113,7 @@ const JournalContent = () => {
           
         ))}
       </Grid>
-      <Snackbar open={isSucError} autoHideDuration={6000} onClose={()=>setIsSucError(false)}>
+      <Snackbar open={isSuccess} autoHideDuration={6000} onClose={()=>setIsSuccess(false)}>
       <Alert severity="success" sx={{ width: "100%" }}>
          successfully deleted!
       </Alert>

@@ -1,4 +1,6 @@
 import React, { useState,ChangeEvent, useEffect } from "react";
+import ReactQuill from 'react-quill';
+import 'quill/dist/quill.snow.css';
 import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import { getEntryById,usePutEntry } from "../../queries"; // Implement this function to fetch a single entry by id
@@ -15,7 +17,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { styled, Theme } from "@mui/material/styles";
 import MuiDrawer from "@mui/material/Drawer";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 
@@ -32,6 +34,12 @@ interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
   open2?: boolean;
 }
+
+interface ContentProps {
+  theme: Theme;
+  drawerOpen: boolean;
+}
+
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open" && prop !== "open2",
@@ -59,7 +67,13 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-
+const Content = styled("div")<ContentProps>(({ theme, drawerOpen }) => ({
+  marginRight: drawerOpen ? drawerWidth : 0,
+  transition: theme.transitions.create("margin-right", {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+}));
 
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -92,22 +106,28 @@ const EndDrawer = styled(MuiDrawer, {
 })(({ theme, open }) => ({
   "& .MuiDrawer-paper": {
     position: "fixed",
+    whiteSpace: "nowrap",
     top: 0,
     left: "auto",
     bottom: 0,
-    right: open ? 0 : -drawerWidth, // Adjust drawerWidth as needed
+    right: open ? 0 : -drawerWidth,
     width: drawerWidth,
-    transition: theme.transitions.create("right", {
+    backgroundColor: theme.palette.primary,
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     boxSizing: "border-box",
     ...(!open && {
       overflowX: "hidden",
-      transition: theme.transitions.create("right", {
+      transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
+      width: theme.spacing(7), // Set width to 0 when closed
+      [theme.breakpoints.up("sm")]: {
+        width: theme.spacing(9), // Set width to 0 for larger breakpoints when closed
+      },
     }),
   },
 }));
@@ -119,13 +139,33 @@ const EntryDetail: React.FC = () => {
 
   const [editingMode, setEditingMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
+  const [editedContent, setEditedContent] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isEditError, setIsEditError] = useState(false);
 
   const { id } = useParams<{ id: string }>();
   const entryId = parseInt(id || "0", 10);
 
   const putEntryMutation = usePutEntry();
 
+  // const quillRef = useRef<Quill | null>(null);
 
+  // useEffect(() => {
+  //   const quill = new Quill('#editor', {
+  //     theme: 'snow', // or 'bubble'
+  //     modules: {
+  //       // Include necessary modules for collaborative editing
+  //       toolbar: '#toolbar',
+  //       history: {
+  //         userOnly: true,
+  //       },
+  //       // Add more modules as needed
+  //     },
+  //     // Add your own configurations
+  //   });
+
+  //   quillRef.current = quill;
+  // }, []);
 
   const handleEditClick = () => {
     setEditingMode(true);
@@ -155,6 +195,7 @@ const EntryDetail: React.FC = () => {
   useEffect(() => {
     if (!isLoading && !isError && entry) {
       setEditedTitle(entry.title);
+      setEditedContent(entry.content);
     }
   }, [isLoading, isError, entry]);
   if (isLoading) {
@@ -185,16 +226,20 @@ const EntryDetail: React.FC = () => {
   const handleSaveClick = async () => {
     try {
       // Assuming you have the updated entry data in a variable called 'updatedEntry'
-      const updatedEntry = { id:entry.id, title:editedTitle, content:entry.content};
+      const updatedEntry = { id:entry.id, title:editedTitle, content:editedContent};
   
       // Call the mutate function with the updated entry data
-      await putEntryMutation.mutateAsync(updatedEntry);
+      await putEntryMutation.mutateAsync(updatedEntry).then(() => {
+        setIsSuccess(true);
+      });
   
-      // The mutation was successful, you can handle the success if needed
-      console.log('Entry updated successfully');
     } catch (error) {
-      // Handle the error if the mutation fails
-      console.error('Failed to update entry', error);
+      setIsEditError(true);
+      <Snackbar open={isEditError} autoHideDuration={6}>
+      <Alert severity="error" sx={{ width: "100%" }}>
+        Couldn't Delete Entry!
+      </Alert>
+    </Snackbar>
     }
   
   
@@ -202,6 +247,7 @@ const EntryDetail: React.FC = () => {
 };
 
   return (
+    <> 
     <Box sx={{ display: "flex" }}>
       <AppBar position="absolute" open={open} open2={open2}>
         <Toolbar
@@ -299,13 +345,27 @@ const EntryDetail: React.FC = () => {
         </Toolbar>
         <Divider />
       </EndDrawer>
-      <div className="w-full h-screen bg-white"></div>
+      <Content theme={undefined as never} drawerOpen={open2} className="h-full w-full">
+      <div className="w-full h-screen py-20 px-20">
+      {/* <div>
+      <div id="toolbar">
+        
+        <button className="ql-bold">Bold</button>
+        <button className="ql-italic">Italic</button>
+        
+      </div>
+      <div id="editor" ></div>
+    </div> */}
+    <ReactQuill value = {editedContent} onChange={setEditedContent}  readOnly={!editingMode}className="h-full"/>
+      </div>
+      </Content>
     </Box>
-    // <div>
-    //   <h2>{entry?.title}</h2>
-    //   <p>{entry?.content}</p>
-    //   {/* Render other details as needed */}
-    // </div>
+
+         <Snackbar open={isSuccess} autoHideDuration={6000} onClose={()=>setIsSuccess(false)}>
+    <Alert severity="success" sx={{ width: "100%" }}>
+       successfully Edited!
+    </Alert>
+  </Snackbar></>
   );
 };
 
