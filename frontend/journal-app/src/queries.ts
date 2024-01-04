@@ -72,8 +72,18 @@ export const useLogin = (): {
       },
     }
   );
+  const logoutMutation = useMutation<void, unknown, void, unknown>(
+    () => {
+      // Perform logout actions, e.g., clear tokens
+      cookies.remove("access_token", { path: "/" });
+      cookies.remove("refresh_token", { path: "/" });
+    }
+  );
 
-  return { loginMutation, isLoggedIn };
+  const logout = async () => {
+    await logoutMutation.mutateAsync();
+  };  
+  return { loginMutation, logoutMutation, isLoggedIn, logout };
 };
 
 export const useRegister = () => {

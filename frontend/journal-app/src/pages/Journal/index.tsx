@@ -86,7 +86,7 @@ const JournalContent = () => {
   return (
     <>
       <div className="flex flex-col items-center h-screen ">
-        <div className="w-full flex items-center space-x-10">
+        <div className="w-full flex items-center justify-between">
         <Typography variant="h4">
             Journals
         </Typography>

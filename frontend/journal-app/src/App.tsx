@@ -12,6 +12,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import MuiTheme from "./MuiTheme";
 import Entries from "./pages/entries";
 import CreateEntries from "./pages/Journal/CreateEntries";
+import ProtectedRoute from "./ProtectedRoutes";
 
 function App() {
   const preferedSettings = useMediaQuery("(prefers-color-scheme: dark)");
@@ -30,13 +31,38 @@ function App() {
           <Route path="/" element={<IndexPage />} />
           <Route path="/login" element={<Login />}></Route>
           <Route path="/signup" element={<Signup />} />
-          <Route path="/route" element={<Entries />} />
+          <Route
+            path="/route"
+            element={
+              <ProtectedRoute>
+                <Entries />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
-            element={<Dashboard mode={mode} setMode={handleModeChange} />}
+            element={
+              <ProtectedRoute>
+                <Dashboard mode={mode} setMode={handleModeChange} />
+              </ProtectedRoute>
+            }
           />
-          <Route path="entries/:id" element={<EntryDetail />} />
-          <Route path="/createEntries" element={<CreateEntries />} />
+          <Route
+            path="entries/:id"
+            element={
+              <ProtectedRoute>
+                <EntryDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/createEntries"
+            element={
+              <ProtectedRoute>
+                <CreateEntries />
+              </ProtectedRoute>
+            }
+          />
 
           {/* <Route path="/forgot-password" element={<ForgotPassword />} />
          <Route path="/change-password" element={<ChangePassword />} /> */}
