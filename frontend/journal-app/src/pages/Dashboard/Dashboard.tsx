@@ -13,12 +13,30 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { mainListItemsData, secondaryListItemsData } from "./listItems";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
 
-import { Avatar, Container, ListItemButton, ListItemIcon, ListItemText, Switch } from "@mui/material";
+import {
+  Alert,
+  Avatar,
+  CircularProgress,
+  Container,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Snackbar,
+  Switch,
+} from "@mui/material";
 import { useState } from "react";
 import DashboardContent from "./DashboardContent";
 import JournalContent from "../Journal";
 import { tw } from "typewind";
+import { useLogout } from "../../queries";
+import { useNavigate } from "react-router-dom";
+import Profile from "../Profile";
 
 interface listItem {
   primary: string;
@@ -46,6 +64,75 @@ interface props {
   mode: boolean;
   setMode: () => void;
 }
+
+interface DropdownMenuProps {
+  handleLogout: () => Promise<void>;
+}
+
+const DropdownMenu: React.FC<DropdownMenuProps> = ({ handleLogout }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const navigate = useNavigate();
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleProfileNavigation = () => {
+    setAnchorEl(null);
+    navigate('/profile')
+  }
+
+  return (
+    <>
+      <IconButton color="inherit" onClick={handleClick}>
+        <Avatar
+          alt="Remy Sharp"
+          src="/Hero.jpg"
+          sx={{ width: 30, height: 30 }}
+        />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        PaperProps={{
+          style: {
+            width: "150px", // Set your desired width here
+          },
+        }}
+      >
+        <MenuItem onClick={handleProfileNavigation}>
+          <ListItemIcon>
+            <AccountCircleIcon sx={{ fontSize: 22 }} />
+          </ListItemIcon>
+          Profile
+        </MenuItem>
+        <MenuItem onClick={handleClose}>
+          <ListItemIcon>
+            <SettingsIcon sx={{ fontSize: 22 }} />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <LogoutIcon sx={{ fontSize: 22 }} />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
+    </>
+  );
+};
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -94,23 +181,47 @@ const Drawer = styled(MuiDrawer, {
 export default function Dashboard({ mode, setMode }: props) {
   const [open, setOpen] = useState(true);
   const [selectedItem, setSelectedItem] = useState("Dashboard");
+  const { mutate: logout, isLoading, isError } = useLogout();
+  const navigate = useNavigate();
   const toggleDrawer = () => {
     setOpen(!open);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
   const renderComponent = () => {
     switch (selectedItem) {
       case "Dashboard":
         return <DashboardContent />;
       case "Journal":
         return <JournalContent />;
-      // case "Books":
-      //   return <BooksContent />;
+      case "Profile":
+        return <Profile />;
       // Add more cases for other menu items
       default:
         return null;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center h-screen ">
+        <CircularProgress size={30} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Snackbar open={isError} autoHideDuration={60}>
+        <Alert severity="error" sx={{ width: "100%" }}>
+          Couldn't logout, please try again!
+        </Alert>
+      </Snackbar>
+    );
+  }
 
   return (
     <>
@@ -149,11 +260,7 @@ export default function Dashboard({ mode, setMode }: props) {
               </Badge>
             </IconButton>
 
-            <Avatar
-              alt="Remy Sharp"
-              src="/Hero.jpg"
-              sx={{ width: 30, height: 30, marginLeft: "6px" }}
-            />
+            <DropdownMenu handleLogout={() => handleLogout()} />
             <Switch
               checked={mode}
               onChange={setMode}
@@ -177,7 +284,7 @@ export default function Dashboard({ mode, setMode }: props) {
           </Toolbar>
           <Divider />
           <List component="nav">
-          {mainListItemsData.map((item:listItem) => (
+            {mainListItemsData.map((item: listItem) => (
               <ListItemButton
                 key={item.primary}
                 onClick={() => setSelectedItem(item.primary)}
@@ -187,10 +294,16 @@ export default function Dashboard({ mode, setMode }: props) {
               </ListItemButton>
             ))}
             <Divider sx={{ my: 1 }} />
-            {secondaryListItemsData.map((item:listItem) => (
+            {secondaryListItemsData.map((item: listItem) => (
               <ListItemButton
                 key={item.primary}
-                onClick={() => setSelectedItem(item.primary)}
+                onClick={() => {
+                  if (item.primary === "Logout") {
+                    handleLogout(); // Call the logout function
+                  } else {
+                    setSelectedItem(item.primary);
+                  }
+                }}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.primary} />
@@ -209,7 +322,6 @@ export default function Dashboard({ mode, setMode }: props) {
             height: "100vh",
             overflow: "auto",
           }}
-          
         >
           <Container className={tw.p_24}>{renderComponent()}</Container>
           <Copyright />

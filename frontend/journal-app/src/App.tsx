@@ -13,6 +13,7 @@ import MuiTheme from "./MuiTheme";
 import Entries from "./pages/entries";
 import CreateEntries from "./pages/Journal/CreateEntries";
 import ProtectedRoute from "./ProtectedRoutes";
+import Profile from "./pages/Profile";
 
 function App() {
   const preferedSettings = useMediaQuery("(prefers-color-scheme: dark)");
@@ -60,6 +61,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateEntries />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

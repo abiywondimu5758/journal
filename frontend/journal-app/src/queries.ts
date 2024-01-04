@@ -14,6 +14,10 @@ export interface LoginResponse {
   // Add other fields as needed
 }
 
+export interface LogoutResponse {
+  // If there is any response needed for logout
+}
+
 const cookies = new Cookies();
 
 export const useLogin = (): {
@@ -72,18 +76,35 @@ export const useLogin = (): {
       },
     }
   );
-  const logoutMutation = useMutation<void, unknown, void, unknown>(
+
+  return { loginMutation, isLoggedIn };
+};
+
+export const useLogout = (): UseMutationResult<
+  LogoutResponse,
+  unknown,
+  void,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation<LogoutResponse, unknown, void, unknown>(
     () => {
       // Perform logout actions, e.g., clear tokens
       cookies.remove("access_token", { path: "/" });
       cookies.remove("refresh_token", { path: "/" });
+
+      // Optional: Invalidate queries or perform other cleanup
+      queryClient.invalidateQueries("entries"); // Replace with your query key
+      return Promise.resolve({} as LogoutResponse); // Resolve immediately
+    },
+    {
+      onSuccess: (data: LogoutResponse) => {
+        console.log("Logout successful",data);
+        // You can perform any additional actions upon successful logout
+      },
     }
   );
-
-  const logout = async () => {
-    await logoutMutation.mutateAsync();
-  };  
-  return { loginMutation, logoutMutation, isLoggedIn, logout };
 };
 
 export const useRegister = () => {
@@ -269,6 +290,32 @@ export const usePostEntry = () => {
         // Invalidate and refetch the 'entries' query after successful update
         queryClient.invalidateQueries("entries");
       },
+    }
+  );
+};
+
+
+export const useUser = () => {
+  const cookies = new Cookies();
+  const accessToken = cookies.get("access_token");
+
+  return useQuery(
+    "User",
+    () =>
+      fetch("http://127.0.0.1:8000/api/v1/user/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }).then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch user"); // Handle non-2xx responses if needed
+        }
+        return response.json();
+      }),
+    {
+      enabled: !!accessToken, // Fetch only if the accessToken is present
     }
   );
 };

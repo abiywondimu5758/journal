@@ -8,6 +8,7 @@ import BookIcon from '@mui/icons-material/Book';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HelpIcon from '@mui/icons-material/Help';
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 // export const mainListItems = (
 //   <React.Fragment>
@@ -41,12 +42,12 @@ import HelpIcon from '@mui/icons-material/Help';
 //       </ListItemIcon>
 //       <ListItemText primary="Help" />
 //     </ListItemButton>
-//     <ListItemButton>
-//       <ListItemIcon>
-//         <LogoutIcon />
-//       </ListItemIcon>
-//       <ListItemText primary="Logout" />
-//     </ListItemButton>
+    // <ListItemButton>
+    //   <ListItemIcon>
+    //     <LogoutIcon />
+    //   </ListItemIcon>
+    //   <ListItemText primary="Logout" />
+    // </ListItemButton>
 //   </React.Fragment>
 // );
 
@@ -58,6 +59,7 @@ export const mainListItemsData = [
 ];
 
 export const secondaryListItemsData = [
+  { primary: "Profile", icon: <AccountCircleIcon/>},
   { primary: "Help", icon: <HelpIcon /> },
   { primary: "Logout", icon: <LogoutIcon /> },
   // Add more menu items as needed

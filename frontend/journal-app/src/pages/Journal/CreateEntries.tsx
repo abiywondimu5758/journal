@@ -26,14 +26,13 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useNavigate } from "react-router-dom";
 
 import SaveIcon from "@mui/icons-material/Save";
-import { Any } from "react-spring";
 
 const drawerWidth: number = 340;
-interface response {
-    id: number;
-    title: string;
-    content: string;
-}
+// interface response {
+//     id: number;
+//     title: string;
+//     content: string;
+// }
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
