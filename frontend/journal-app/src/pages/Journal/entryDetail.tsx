@@ -279,7 +279,7 @@ const EntryDetail: React.FC = () => {
               <TextField
                 value={editedTitle}
                 onChange={handleTitleChange}
-                variant="outlined"
+                variant="standard"
               />
             ) : (
               entry.title

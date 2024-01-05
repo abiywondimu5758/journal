@@ -100,7 +100,7 @@ export const useLogout = (): UseMutationResult<
     },
     {
       onSuccess: (data: LogoutResponse) => {
-        console.log("Logout successful",data);
+        console.log("Logout successful", data);
         // You can perform any additional actions upon successful logout
       },
     }
@@ -221,11 +221,10 @@ export const useDeleteEntry = async () => {
   );
 };
 
-
 export const usePutEntry = () => {
   const queryClient = useQueryClient();
   return useMutation(
-    async (updatedEntry: { id:number, title:string,content:string }) => {
+    async (updatedEntry: { id: number; title: string; content: string }) => {
       const accessToken = cookies.get("access_token");
       const headers = {
         "Content-Type": "application/json",
@@ -253,7 +252,6 @@ export const usePutEntry = () => {
     }
   );
 };
-
 
 export const usePostEntry = () => {
   const queryClient = useQueryClient();
@@ -294,7 +292,6 @@ export const usePostEntry = () => {
   );
 };
 
-
 export const useUser = () => {
   const cookies = new Cookies();
   const accessToken = cookies.get("access_token");
@@ -316,6 +313,43 @@ export const useUser = () => {
       }),
     {
       enabled: !!accessToken, // Fetch only if the accessToken is present
+    }
+  );
+};
+
+export const usePutUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    async (updatedUser: {
+      first_name: string;
+      last_name: string;
+      username: string;
+      email: string;
+      birth_date: Date;
+      password: string;
+      bio: string;
+    }) => {
+      const accessToken = cookies.get("access_token");
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+      const response = await fetch("http://127.0.0.1:8000/api/v1/user/", {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(updatedUser),
+      });
+      if (!response.ok) {
+        console.log(response.body);
+        return response.json
+      }
+      return response.json;
+    },
+    {
+      onSuccess: () => {
+        // Invalidate and refetch the 'user' query after successful update
+        queryClient.invalidateQueries("user");
+      },
     }
   );
 };

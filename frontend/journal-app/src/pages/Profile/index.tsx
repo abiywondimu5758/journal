@@ -7,17 +7,64 @@ import {
   Divider,
   Grid,
   Snackbar,
+  TextField,
   Typography,
 } from "@mui/material";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
-import { useUser } from "../../queries";
-import VerifiedIcon from '@mui/icons-material/Verified';
+import { usePutUser, useUser } from "../../queries";
+import VerifiedIcon from "@mui/icons-material/Verified";
 import { deepOrange } from "@mui/material/colors";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import { useEffect, useState } from "react";
 
 const Profile = () => {
   const { data: user, isLoading, isError } = useUser();
-  console.log(user)
+  const putUserMutation = usePutUser();
 
+  const [editingMode, setEditingMode] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isEditError, setIsEditError] = useState(false);
+
+  // const passwordRef = useRef<HTMLInputElement>(null);
+  // const bioRef = useRef<HTMLInputElement>();
+  // const avatarRef = useRef<HTMLInputElement>();
+
+  const [data, setData] = useState({
+    first_name: "",
+    last_name: "",
+    username: "",
+    email: "",
+    birth_date: Date,
+    password: "",
+    bio: "",
+    avatar: "",
+    date_joined: "",
+    otp_validated: "",
+    last_login: "",
+  });
+
+  const handleEditingMode = () => {
+    setEditingMode((prev) => !prev);
+  };
+
+  useEffect(() => {
+    if (!isLoading && !isError && user) {
+      setData({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        username: user.username,
+        email: user.email,
+        birth_date: user.birth_date,
+        password: user.password,
+        bio: user.bio,
+        avatar: '/Hero.jpg',
+        date_joined: user.date_joined,
+        otp_validated: user.otp_validated,
+        last_login: user.last_login,
+      });
+    }
+  }, [isLoading, isError, user]);
   if (isLoading) {
     return (
       <div className="flex flex-col items-center h-screen ">
@@ -31,35 +78,101 @@ const Profile = () => {
       <>
         <div className="flex flex-col items-center h-screen ">
           <Alert severity="error" sx={{ width: "100%" }}>
-            Couldn't load Entries!
+            Couldn't Load Profile!
           </Alert>
         </div>
-        <Snackbar open={isError} autoHideDuration={60}>
+        {/* <Snackbar open={isError} autoHideDuration={60}>
           <Alert severity="error" sx={{ width: "100%" }}>
-            Couldn't load Entries!
+            Couldn't Load Profile!
           </Alert>
-        </Snackbar>
+        </Snackbar> */}
       </>
     );
   }
+
+  const handleFieldChange = (fieldName: string, value: string) => {
+    setData({ ...data, [fieldName]: value });
+  };
+
+  const handleSaveClick = async () => {
+    try {
+      // const birthDateValue = Date.now();
+      // const passwordValue = passwordRef.current?.value || "";
+      // Assuming you have the updated entry data in a variable called 'updatedEntry'
+      const updatedUser = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        username: data.username,
+        email: data.email,
+        birth_date: user.birth_date,
+        password: data.password,
+        bio: data.bio
+      };
+
+      // Call the mutate function with the updated entry data
+      await putUserMutation.mutateAsync(updatedUser).then(() => {
+        setIsSuccess(true);
+      });
+    } catch (error) {
+      setIsEditError(true);
+      <Snackbar open={isEditError} autoHideDuration={6}>
+        <Alert severity="error" sx={{ width: "100%" }}>
+          Couldn't Edit user!
+        </Alert>
+      </Snackbar>;
+    }
+
+    setEditingMode(false);
+  };
 
   return (
     <div className="flex flex-col items-center h-fit space-y-8">
       <div className="flex flex-row justify-between items-center w-full">
         <div className="flex space-x-4 items-center">
           <ArrowBackIcon />
-          <Avatar alt="Remy Sharp" sx={{width:50, height:50,  bgcolor: deepOrange[500] }}>{user.first_name.charAt(0)}{user.last_name.charAt(0)}</Avatar>
-          <div className="flex flex-col items-start x-space-0">
-            <Typography variant="h5">{user.first_name} {user.last_name}</Typography>
-            <Typography variant="subtitle2" color="grey">
-              My name is Remy and I love writing on my journal. I am easy going,
-              professional person.{user.bio}
-            </Typography>
+          <Avatar
+            alt="Remy Sharp"
+            sx={{ width: 50, height: 50, bgcolor: deepOrange[500] }}
+            src={data.avatar}
+          >
+            {data.first_name.charAt(0)}
+            {data.last_name.charAt(0)}
+          </Avatar>
+          <div className="flex flex-col items-start space-y-0">
+            <div className="flex items-center space-x-2">
+              <Typography variant="h5">
+                {data.first_name} {data.last_name}
+              </Typography>
+              {!editingMode ? (
+                <EditIcon sx={{ fontSize: 18 }} onClick={handleEditingMode} />
+              ) : (
+                <SaveIcon sx={{ fontSize: 18 }} onClick={handleSaveClick} />
+              )}
+            </div>
+            {!editingMode ? (
+              <Typography variant="subtitle2" color="grey">
+                {data.bio}
+              </Typography>
+            ) : (
+              <TextField
+                variant="standard"
+                value={data.bio}
+                sx={{ width: 800 }}
+                onChange={(e) => handleFieldChange("bio", e.target.value)}
+              />
+            )}
           </div>
         </div>
         <div className="flex space-x-4 items-center">
-          <Typography variant="caption" >
-            {user.otp_validated ? (<div className="flex items-center space-x-1"><VerifiedIcon color='primary' sx={{fontSize:20}}/> <span>Email verified</span></div>): 'Email not verified'}
+          <Typography variant="caption">
+            {data.otp_validated ? (
+              <div className="flex items-center space-x-1">
+                <VerifiedIcon color="primary" sx={{ fontSize: 20 }} />{" "}
+                <span>Email verified</span>
+              </div>
+            ) : (
+              "Email not verified"
+            )}
           </Typography>
           <div className="w-28 h-12 dark:bg-primaryPink bg-white rounded-md flex items-center px-4 space-x-1">
             <DeleteForever sx={{ color: "#FFFFFF" }} />
@@ -77,7 +190,7 @@ const Profile = () => {
           </Typography>
           <div className="w-80 h-72 bg-gray-500 flex items-center rounded-lg">
             {" "}
-            <img src="/Hero.jpg" className="w-full h-full rounded-lg" />
+            <img src={data.avatar} className="w-full h-full rounded-lg" />
           </div>
           <div
             className="flex items-center space-x-2 "
@@ -100,41 +213,131 @@ const Profile = () => {
               <Typography variant="subtitle1" color="GrayText">
                 PERSONAL DETAILS
               </Typography>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+              <div
+                className={`w-full flex flex-col items-start justify-between py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md ${
+                  !editingMode ? "h-16" : "h-20"
+                }`}
+              >
                 <Typography variant="body2" color="grayText">
-                  Fullname
+                  First Name
                 </Typography>
-                <Typography>{user.first_name} {user.last_name}</Typography>
+                {!editingMode ? (
+                  <Typography>{data.first_name}</Typography>
+                ) : (
+                  <TextField
+                    variant="standard"
+                    value={data.first_name}
+                    sx={{ width: 300 }}
+                    onChange={(e) =>
+                      handleFieldChange("first_name", e.target.value)
+                    }
+                  />
+                )}
               </div>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+              <div
+                className={`w-full flex flex-col items-start justify-between py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md ${
+                  !editingMode ? "h-16" : "h-20"
+                }`}
+              >
+                <Typography variant="body2" color="grayText">
+                  Last Name
+                </Typography>
+                {!editingMode ? (
+                  <Typography>{data.last_name}</Typography>
+                ) : (
+                  <TextField
+                    variant="standard"
+                    value={data.last_name}
+                    sx={{ width: 300 }}
+                    onChange={(e) =>
+                      handleFieldChange("last_name", e.target.value)
+                    }
+                  />
+                )}
+              </div>
+              <div
+                className={`w-full flex flex-col items-start justify-between py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md ${
+                  !editingMode ? "h-16" : "h-20"
+                }`}
+              >
                 <Typography variant="body2" color="grayText">
                   Username
                 </Typography>
-                <Typography>{user.username}</Typography>
+                {!editingMode ? (
+                  <Typography>{data.username}</Typography>
+                ) : (
+                  <TextField
+                    variant="standard"
+                    value={data.username}
+                    sx={{ width: 300 }}
+                    onChange={(e) =>
+                      handleFieldChange("username", e.target.value)
+                    }
+                  />
+                )}
               </div>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+              <div
+                className={`w-full flex flex-col items-start justify-between py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md ${
+                  !editingMode ? "h-16" : "h-20"
+                }`}
+              >
                 <Typography variant="body2" color="grayText">
                   Email
                 </Typography>
-                <Typography>{user.email}</Typography>
+                {!editingMode ? (
+                  <Typography>{data.email}</Typography>
+                ) : (
+                  <TextField
+                    variant="standard"
+                    value={data.email}
+                    sx={{ width: 300 }}
+                    onChange={(e) => handleFieldChange("email", e.target.value)}
+                  />
+                )}
               </div>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+              <div
+                className={`w-full flex flex-col items-start justify-between py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md ${
+                  !editingMode ? "h-16" : "h-20"
+                }`}
+              >
                 <Typography variant="body2" color="grayText">
                   BirthDate
                 </Typography>
-                <Typography>{user.birth_date}</Typography>
+                {!editingMode ? (
+                  <Typography>
+                    {new Date(data.birth_date.toString()).toLocaleDateString(
+                      "en-US",
+                      { year: "numeric", month: "long", day: "numeric" }
+                    )}
+                  </Typography>
+                ) : (
+                  <TextField
+                    variant="standard"
+                    value={data.birth_date.toString()}
+                    sx={{ width: 300 }}
+                    onChange={(e) =>
+                      handleFieldChange("birth_date", e.target.value)
+                    }
+                  />
+                )}
               </div>
               <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
                 <Typography variant="body2" color="grayText">
                   Joined Date
                 </Typography>
-                <Typography>{user.date_joined}</Typography>
+                <Typography>
+                  {" "}
+                  {new Date(data.date_joined.toString()).toLocaleDateString(
+                    "en-US",
+                    { year: "numeric", month: "long", day: "numeric" }
+                  )}
+                </Typography>
               </div>
               <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
                 <Typography variant="body2" color="grayText">
                   Last Login
                 </Typography>
-                <Typography>{user.last_login}</Typography>
+                <Typography>{data.last_login}</Typography>
               </div>
             </div>
           </Grid>
@@ -196,6 +399,15 @@ const Profile = () => {
           </Grid>
         </Grid>
       </div>
+      <Snackbar
+        open={isSuccess}
+        autoHideDuration={6000}
+        onClose={() => setIsSuccess(false)}
+      >
+        <Alert severity="success" sx={{ width: "100%" }}>
+          successfully Edited!
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

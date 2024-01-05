@@ -1,6 +1,7 @@
 # serializers.py
 from rest_framework import serializers
 from .models import User
+from django.contrib.auth import get_user_model
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -15,7 +16,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'username',
-                  'email', 'birth_date', 'password', 'bio', 'avatar', )
+                  'email', 'birth_date', 'password', 'bio', 'avatar', 'date_joined','otp_validated', 'last_login')
 
     def create(self, validated_data):
         # Custom logic to create a user with a hashed password
@@ -82,3 +83,13 @@ class PasswordChangeSerializer(serializers.Serializer):
                 "New password and confirm new password must match.")
 
         return data
+
+
+class CustomUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['first_name', 'last_name', 'username', 'email', 'birth_date', 'bio', 'avatar']
+
+    def validate_password(self, value):
+        # Make the password field optional during updates
+        return value

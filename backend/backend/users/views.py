@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import generics, permissions, status
 from .models import User
-from .serializers import CustomUserSerializer, OTPRequestSerializer, PasswordChangeSerializer
+from .serializers import CustomUserSerializer, OTPRequestSerializer, PasswordChangeSerializer, CustomUserUpdateSerializer
 from rest_framework.views import APIView
 from .utils import generate_otp, verify_otp, forgot_password
 from django.core.exceptions import ObjectDoesNotExist
@@ -55,7 +55,7 @@ class CustomUserListCreateView(generics.CreateAPIView):
                 return Response({'detail': 'An error occurred while creating the user.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class CustomUserDetailView(generics.RetrieveAPIView):
+class CustomUserDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -66,7 +66,17 @@ class CustomUserDetailView(generics.RetrieveAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    def perform_update(self, serializer):
+        # Override the perform_update method to update the user without requiring the password
+        serializer.save(password=self.request.user.password)
+        return Response(serializer.data)
 
+class CustomUserUpdateView(generics.UpdateAPIView):
+    serializer_class = CustomUserUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def perform_update(self, serializer):
+        serializer.save(password=self.request.user.password)
+        return Response(serializer.data)
 
 class AdminUserListView(generics.ListAPIView):
     queryset = User.objects.all()
