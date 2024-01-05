@@ -334,7 +334,7 @@ export const usePutUser = () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       };
-      const response = await fetch("http://127.0.0.1:8000/api/v1/user/", {
+      const response = await fetch("http://127.0.0.1:8000/api/v1/user/update/", {
         method: "PUT",
         headers,
         body: JSON.stringify(updatedUser),

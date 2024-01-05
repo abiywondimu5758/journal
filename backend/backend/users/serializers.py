@@ -90,6 +90,17 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ['first_name', 'last_name', 'username', 'email', 'birth_date', 'bio', 'avatar']
 
-    def validate_password(self, value):
-        # Make the password field optional during updates
-        return value
+
+    def update(self, instance, validated_data):
+        # Update only the fields that are provided
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.birth_date = validated_data.get('birth_date', instance.birth_date)
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.avatar = validated_data.get('avatar', instance.avatar)
+
+        # Save the instance without updating the password
+        instance.save()
+        return instance

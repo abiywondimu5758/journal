@@ -75,7 +75,7 @@ class CustomUserUpdateView(generics.UpdateAPIView):
     serializer_class = CustomUserUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
     def perform_update(self, serializer):
-        serializer.save(password=self.request.user.password)
+        serializer.save()
         return Response(serializer.data)
 
 class AdminUserListView(generics.ListAPIView):

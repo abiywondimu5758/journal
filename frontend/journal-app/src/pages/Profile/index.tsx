@@ -3,6 +3,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Alert,
   Avatar,
+  Button,
   CircularProgress,
   Divider,
   Grid,
@@ -58,7 +59,7 @@ const Profile = () => {
         birth_date: user.birth_date,
         password: user.password,
         bio: user.bio,
-        avatar: '/Hero.jpg',
+        avatar: "/Hero.jpg",
         date_joined: user.date_joined,
         otp_validated: user.otp_validated,
         last_login: user.last_login,
@@ -106,7 +107,7 @@ const Profile = () => {
         email: data.email,
         birth_date: user.birth_date,
         password: data.password,
-        bio: data.bio
+        bio: data.bio,
       };
 
       // Call the mutate function with the updated entry data
@@ -146,7 +147,7 @@ const Profile = () => {
               {!editingMode ? (
                 <EditIcon sx={{ fontSize: 18 }} onClick={handleEditingMode} />
               ) : (
-                <SaveIcon sx={{ fontSize: 18 }} onClick={handleSaveClick} />
+                ""
               )}
             </div>
             {!editingMode ? (
@@ -367,34 +368,45 @@ const Profile = () => {
             </div>
           </Grid>
           <Grid item xs={12} md={4}>
-            <div className="flex flex-col space-y-4 ">
-              <Typography variant="subtitle1" color="GrayText">
-                PERSONAL DETAILS
-              </Typography>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
-                <Typography variant="body2" color="grayText">
-                  Fullname
+            <div className="flex flex-col justify-between h-full">
+              <div className="flex flex-col space-y-4 ">
+                <Typography variant="subtitle1" color="GrayText">
+                  PERSONAL DETAILS
                 </Typography>
-                <Typography>Remy Sharp</Typography>
+                <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+                  <Typography variant="body2" color="grayText">
+                    Fullname
+                  </Typography>
+                  <Typography>Remy Sharp</Typography>
+                </div>
+                <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+                  <Typography variant="body2" color="grayText">
+                    Username
+                  </Typography>
+                  <Typography>remy</Typography>
+                </div>
+                <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+                  <Typography variant="body2" color="grayText">
+                    Email
+                  </Typography>
+                  <Typography>remysharp@gmail.com</Typography>
+                </div>
+                <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
+                  <Typography variant="body2" color="grayText">
+                    BirthDate
+                  </Typography>
+                  <Typography>12/12/89</Typography>
+                </div>
               </div>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
-                <Typography variant="body2" color="grayText">
-                  Username
-                </Typography>
-                <Typography>remy</Typography>
-              </div>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
-                <Typography variant="body2" color="grayText">
-                  Email
-                </Typography>
-                <Typography>remysharp@gmail.com</Typography>
-              </div>
-              <div className="w-full flex flex-col items-start justify-between h-16 py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md">
-                <Typography variant="body2" color="grayText">
-                  BirthDate
-                </Typography>
-                <Typography>12/12/89</Typography>
-              </div>
+              {/* <div className="w-28 h-12 dark:bg-primaryPink bg-white rounded-md flex items-center px-4 space-x-1">
+            <SaveIcon sx={{ color: "#FFFFFF" }} onClick={handleSaveClick}/> 
+            <Typography variant="subtitle1" sx={{ color: "#FFFFFF" }}>
+              Save
+            </Typography>
+          </div> */}
+              <Button variant="contained" startIcon={<SaveIcon/>}>
+                Save
+              </Button>
             </div>
           </Grid>
         </Grid>
