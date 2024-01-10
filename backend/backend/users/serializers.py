@@ -16,7 +16,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'username',
-                  'email', 'birth_date', 'password', 'bio', 'avatar', 'date_joined','otp_validated', 'last_login')
+                  'email', 'birth_date', 'password', 'bio', 'avatar', 'date_joined','otp_validated', 'last_login','otp_forgot_pass')
 
     def create(self, validated_data):
         # Custom logic to create a user with a hashed password
@@ -88,7 +88,7 @@ class PasswordChangeSerializer(serializers.Serializer):
 class CustomUserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['first_name', 'last_name', 'username', 'email', 'birth_date', 'bio', 'avatar']
+        fields = ['first_name', 'last_name', 'username', 'email', 'birth_date', 'password', 'bio', 'avatar']
 
 
     def update(self, instance, validated_data):
@@ -98,9 +98,14 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.birth_date = validated_data.get('birth_date', instance.birth_date)
+        instance.password = validated_data.get('password', instance.password)
         instance.bio = validated_data.get('bio', instance.bio)
         instance.avatar = validated_data.get('avatar', instance.avatar)
 
         # Save the instance without updating the password
-        instance.save()
-        return instance
+    def update(self, instance, validated_data):
+        # Custom logic to update a user, including handling password update
+        password = validated_data.pop('password', None)
+        if password is not None:
+            instance.set_password(password)
+        return super().update(instance, validated_data)

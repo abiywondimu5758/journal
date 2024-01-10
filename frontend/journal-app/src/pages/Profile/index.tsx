@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+// import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import { usePutUser, useUser } from "../../queries";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { deepOrange } from "@mui/material/colors";
@@ -19,7 +19,15 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 
+// import type { UploadProps } from 'antd';
+// import { message } from 'antd';
+
+
+
 const Profile = () => {
+  const customStyles = {
+    color: "#ffffff",
+  };
   const { data: user, isLoading, isError } = useUser();
   const putUserMutation = usePutUser();
 
@@ -44,6 +52,37 @@ const Profile = () => {
     otp_validated: "",
     last_login: "",
   });
+  // const props: UploadProps = {
+  //   name: 'file',
+  //   action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
+  //   headers: {
+  //     authorization: 'authorization-text',
+  //   },
+  //   onChange(info) {
+  
+  //     if (info.file.status === 'done') {
+  //       setData({ ...data, avatar: info.file.response });
+  //       message.success(`${info.file.name} file uploaded successfully`);
+  //     } else if (info.file.status === 'error') {
+  //       message.error(`${info.file.name} file upload failed.`);
+  //     }
+  //   },
+  // };
+
+  const convertFile = (files: FileList|null) => {
+    if (files) {
+      const fileRef = files[0] || ""
+      const fileType: string= fileRef.type || ""
+      console.log("This file upload is of type:",fileType)
+      const reader = new FileReader()
+      reader.readAsBinaryString(fileRef)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      reader.onload=(ev: any) => {
+        // convert it to base64
+        setData({...data, avatar:`data:${fileType};base64,${btoa(ev.target.result)}`})
+      }
+    }
+  }
 
   const handleEditingMode = () => {
     setEditingMode((prev) => !prev);
@@ -57,9 +96,9 @@ const Profile = () => {
         username: user.username,
         email: user.email,
         birth_date: user.birth_date,
-        password: user.password,
+        password: "",
         bio: user.bio,
-        avatar: "/Hero.jpg",
+        avatar: user.avatar,
         date_joined: user.date_joined,
         otp_validated: user.otp_validated,
         last_login: user.last_login,
@@ -108,22 +147,24 @@ const Profile = () => {
         birth_date: user.birth_date,
         password: data.password,
         bio: data.bio,
+        avatar: data.avatar
       };
 
       // Call the mutate function with the updated entry data
-      await putUserMutation.mutateAsync(updatedUser).then(() => {
+      const response = await putUserMutation.mutateAsync(updatedUser);
+
+      if (response.ok) {
         setIsSuccess(true);
-      });
+        setEditingMode(false);
+      }
+      else {
+        setIsEditError(true);
+      }
     } catch (error) {
       setIsEditError(true);
-      <Snackbar open={isEditError} autoHideDuration={6}>
-        <Alert severity="error" sx={{ width: "100%" }}>
-          Couldn't Edit user!
-        </Alert>
-      </Snackbar>;
     }
 
-    setEditingMode(false);
+    
   };
 
   return (
@@ -193,6 +234,7 @@ const Profile = () => {
             {" "}
             <img src={data.avatar} className="w-full h-full rounded-lg" />
           </div>
+          {/* <Upload {...props}>
           <div
             className="flex items-center space-x-2 "
             onClick={() => console.log("hi")}
@@ -203,6 +245,8 @@ const Profile = () => {
               Change Profile Image{" "}
             </Typography>
           </div>
+          </Upload> */}
+          <input type="file" onChange={(e)=> convertFile(e.target.files)} />
         </div>
         <Grid
           container
@@ -404,13 +448,50 @@ const Profile = () => {
               Save
             </Typography>
           </div> */}
-              <Button variant="contained" startIcon={<SaveIcon/>}>
-                Save
-              </Button>
+              {editingMode && (
+                <>
+                  <div
+                    className={`w-full flex flex-col items-start justify-between py-2 px-4 rounded-md shadow-sm shadow-gray-100 dark:shadow-gray-700 dark:shadow-md ${
+                      !editingMode ? "h-16" : "h-20"
+                    }`}
+                  >
+                    <Typography variant="body2" color="grayText">
+                      Password
+                    </Typography>
+                    {!editingMode ? (
+                      <Typography>{data.first_name}</Typography>
+                    ) : (
+                      <TextField
+                        error={isEditError}
+                        helperText= {isEditError ? "Incorrect Password": ""}
+                        variant="standard"
+                        sx={{ width: 300 }}
+                        onChange={(e) =>
+                          handleFieldChange("password", e.target.value)
+                        }
+                      />
+                    )}
+                  </div>
+                  <Button
+                    variant="contained"
+                    startIcon={putUserMutation.isLoading ? '':<SaveIcon />}
+                    onClick={handleSaveClick}
+                    disabled={data.password.length < 8}
+                  >
+                    {putUserMutation.isLoading ? (
+                <CircularProgress size={30} style={customStyles}/>
+              ) : (
+                ("Save" as React.ReactNode)
+              )}
+                    
+                  </Button>
+                </>
+              )}
             </div>
           </Grid>
         </Grid>
       </div>
+
       <Snackbar
         open={isSuccess}
         autoHideDuration={6000}
@@ -420,6 +501,12 @@ const Profile = () => {
           successfully Edited!
         </Alert>
       </Snackbar>
+
+      <Snackbar open={isEditError} autoHideDuration={6000} onClose={() => setIsEditError(false)}>
+          <Alert severity="error" sx={{ width: "100%" }}>
+            Couldn't Edit user!
+          </Alert>
+        </Snackbar>;
     </div>
   );
 };

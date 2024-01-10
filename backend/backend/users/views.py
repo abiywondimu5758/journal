@@ -4,12 +4,13 @@ from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status,serializers
 from .models import User
 from .serializers import CustomUserSerializer, OTPRequestSerializer, PasswordChangeSerializer, CustomUserUpdateSerializer
 from rest_framework.views import APIView
 from .utils import generate_otp, verify_otp, forgot_password
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.hashers import check_password
 
 
 class GenerateOTPView(APIView):
@@ -74,8 +75,26 @@ class CustomUserDetailView(generics.RetrieveUpdateAPIView):
 class CustomUserUpdateView(generics.UpdateAPIView):
     serializer_class = CustomUserUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+
+    
+    def get_object(self):
+        # Get the current user
+        return self.request.user
+
     def perform_update(self, serializer):
+        # Get the current user
+        user = self.get_object()
+
+        # Get the provided password from the serializer
+        provided_password = serializer.validated_data.get('password', None)
+        # Check if the provided password matches the current user's password
+        if not check_password(provided_password, user.password):
+            raise serializers.ValidationError({'password': 'Current password is incorrect'})
+
+        # Save the updated data
         serializer.save()
+
         return Response(serializer.data)
 
 class AdminUserListView(generics.ListAPIView):

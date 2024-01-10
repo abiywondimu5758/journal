@@ -328,6 +328,7 @@ export const usePutUser = () => {
       birth_date: Date;
       password: string;
       bio: string;
+      avatar: string;
     }) => {
       const accessToken = cookies.get("access_token");
       const headers = {
@@ -341,15 +342,16 @@ export const usePutUser = () => {
       });
       if (!response.ok) {
         console.log(response.body);
-        return response.json
+        return response
       }
-      return response.json;
+      return response;
     },
     {
       onSuccess: () => {
         // Invalidate and refetch the 'user' query after successful update
         queryClient.invalidateQueries("user");
       },
+
     }
   );
 };
