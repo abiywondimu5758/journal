@@ -328,11 +328,11 @@ export const usePutUser = () => {
       birth_date: Date;
       password: string;
       bio: string;
-      avatar: string;
+      avatar: unknown ;
     }) => {
       const accessToken = cookies.get("access_token");
       const headers = {
-        "Content-Type": "application/json",
+        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${accessToken}`,
       };
       const response = await fetch("http://127.0.0.1:8000/api/v1/user/update/", {

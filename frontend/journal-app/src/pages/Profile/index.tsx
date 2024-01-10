@@ -47,7 +47,7 @@ const Profile = () => {
     birth_date: Date,
     password: "",
     bio: "",
-    avatar: "",
+    avatar: null as unknown || null,
     date_joined: "",
     otp_validated: "",
     last_login: "",
@@ -69,20 +69,7 @@ const Profile = () => {
   //   },
   // };
 
-  const convertFile = (files: FileList|null) => {
-    if (files) {
-      const fileRef = files[0] || ""
-      const fileType: string= fileRef.type || ""
-      console.log("This file upload is of type:",fileType)
-      const reader = new FileReader()
-      reader.readAsBinaryString(fileRef)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      reader.onload=(ev: any) => {
-        // convert it to base64
-        setData({...data, avatar:`data:${fileType};base64,${btoa(ev.target.result)}`})
-      }
-    }
-  }
+
 
   const handleEditingMode = () => {
     setEditingMode((prev) => !prev);
@@ -130,6 +117,18 @@ const Profile = () => {
     );
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    // Ensure it's an image file
+    if (file && file.type.startsWith('image/')) {
+      setData({ ...data, avatar: file });
+    } else {
+      // Handle invalid file type (if needed)
+      console.error('Invalid file type. Please select an image file.');
+    }
+  };
+
   const handleFieldChange = (fieldName: string, value: string) => {
     setData({ ...data, [fieldName]: value });
   };
@@ -149,7 +148,7 @@ const Profile = () => {
         bio: data.bio,
         avatar: data.avatar
       };
-
+      console.log(updatedUser);
       // Call the mutate function with the updated entry data
       const response = await putUserMutation.mutateAsync(updatedUser);
 
@@ -246,7 +245,7 @@ const Profile = () => {
             </Typography>
           </div>
           </Upload> */}
-          <input type="file" onChange={(e)=> convertFile(e.target.files)} />
+          <input type="file" onChange={handleFileChange} />
         </div>
         <Grid
           container
