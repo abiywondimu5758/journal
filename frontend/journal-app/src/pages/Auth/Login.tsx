@@ -105,7 +105,7 @@ const Login = () => {
   };
   const handleFrogotPassword = async (event: React.FormEvent) => {
     setEmptyValue(false);
-    if (email == "") {
+    if (email === "") {
       setEmptyValue(true);
       event.preventDefault();
     } else {
@@ -114,6 +114,7 @@ const Login = () => {
       forgotPass.mutate(formData, {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (error: any) => {
+          event.preventDefault();
           setIsSendingOtpError(true);
           console.error(error.response.message);
           // if (error.response.status === 401) {
@@ -121,6 +122,7 @@ const Login = () => {
           // }
         },
         onSuccess: () => {
+          event.preventDefault();
           setIsSendingOtpSuccess(true);
           setIsVerifyOtp(true);
           setIsForgotPassword(false);
@@ -357,10 +359,10 @@ const Login = () => {
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
                   onClick={handleFrogotPassword}
-                  disabled={loginMutation.isLoading || email.length < 5}
+                  disabled={forgotPass.isLoading || email.length < 5}
                 >
                   {" "}
-                  {loginMutation.isLoading ? (
+                  {forgotPass.isLoading ? (
                     <CircularProgress size={30} />
                   ) : (
                     ("Send OTP" as React.ReactNode)
@@ -381,8 +383,22 @@ const Login = () => {
                   fullWidth
                   id="otp"
                   label="OTP"
-                  type="text"
+                  type={showPassword ? "text" : "password"}
                   defaultValue=""
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => {
+                            setShowPassword((prev) => !prev);
+                          }}
+                        >
+                          {showPassword ? <Visibility /> : <VisibilityOff />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     setOtp(event.target.value)
                   }
@@ -396,10 +412,10 @@ const Login = () => {
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
                   onClick={handleVerifyOtp}
-                  disabled={forgotPass.isLoading || otp.length < 6}
+                  disabled={verifyOtp.isLoading || otp.length < 6}
                 >
                   {" "}
-                  {loginMutation.isLoading ? (
+                  {verifyOtp.isLoading ? (
                     <CircularProgress size={30} />
                   ) : (
                     ("Verify OTP" as React.ReactNode)
