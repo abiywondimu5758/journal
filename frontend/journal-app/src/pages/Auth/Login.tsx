@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { Alert, Snackbar, TextField } from "@mui/material";
+import {
+  Alert,
+  IconButton,
+  InputAdornment,
+  Snackbar,
+  TextField,
+} from "@mui/material";
 import Button from "@mui/material/Button";
 import "./index.css";
 import { Link } from "react-router-dom";
@@ -20,6 +26,7 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // function Copyright(props: any) {
@@ -43,6 +50,7 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [showPassword, setShowPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoginError, setIsLoginError] = useState(false);
   const [emptyValue, setEmptyValue] = useState(false);
@@ -176,7 +184,6 @@ const Login = () => {
             setIsForgotPassword(false);
             setIsSetPassword(false);
             setEmptyValue(false);
-            
           },
         });
       } else {
@@ -241,7 +248,7 @@ const Login = () => {
                   }
                   autoFocus
                   error={emptyValue}
-                  helperText={emptyValue? "Field is required" : ""}
+                  helperText={emptyValue ? "Field is required" : ""}
                 />
 
                 <TextField
@@ -250,13 +257,27 @@ const Login = () => {
                   fullWidth
                   id="password"
                   label="Password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(event.target.value)
                   }
                   error={emptyValue}
-                  helperText={emptyValue? "Field is required" : ""}
+                  helperText={emptyValue ? "Field is required" : ""}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => {
+                            setShowPassword((prev) => !prev);
+                          }}
+                        >
+                          {showPassword ? <Visibility /> : <VisibilityOff />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
 
                 <FormControlLabel
@@ -328,7 +349,7 @@ const Login = () => {
                   }
                   autoFocus
                   error={emptyValue}
-                  helperText={emptyValue? "Field is required" : ""}
+                  helperText={emptyValue ? "Field is required" : ""}
                 />
                 <Button
                   type="submit"
