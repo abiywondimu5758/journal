@@ -1,4 +1,4 @@
-import { DeleteForever } from "@mui/icons-material";
+import { DeleteForever, Visibility, VisibilityOff } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
   Alert,
@@ -7,6 +7,9 @@ import {
   CircularProgress,
   Divider,
   Grid,
+  IconButton,
+  Input,
+  InputAdornment,
   Snackbar,
   TextField,
   Typography,
@@ -46,6 +49,7 @@ const Profile = () => {
   const [otp,setOtp] = useState('');
   const [isVerifyingSuccess, setIsVerifyingSuccess] = useState(false);
   const [isVerifyingError, setIsVerifyingError] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // const passwordRef = useRef<HTMLInputElement>(null);
   // const bioRef = useRef<HTMLInputElement>();
@@ -206,8 +210,9 @@ const Profile = () => {
 
   return (
     <div className="flex flex-col items-center h-fit space-y-8 p-10">
-      <div className="flex flex-row justify-between items-center w-full">
-        <div className="flex space-x-4 items-center">
+      <div className="flex flex-col justify-between items-center w-full space-y-2 md:flex-row md:space-y-0">
+        <div className="flex flex-col space-x-0 space-y-4 items-start md:flex-row md:space-x-4 md:items-center md:space-y-0">
+          <div className="flex space-x-4 items-center">
           <ArrowBackIcon />
           <Avatar
             alt="Remy Sharp"
@@ -217,7 +222,8 @@ const Profile = () => {
             {data.first_name.charAt(0)}
             {data.last_name.charAt(0)}
           </Avatar>
-          <div className="flex flex-col items-start space-y-0">
+          </div>
+          <div className="flex flex-col items-center md:items-start space-y-0">
             <div className="flex items-center space-x-2">
               <Typography variant="h5">
                 {data.first_name} {data.last_name}
@@ -236,7 +242,7 @@ const Profile = () => {
               <TextField
                 variant="standard"
                 value={data.bio}
-                sx={{ width: 800 }}
+                sx={{ width: 500 }}
                 onChange={(e) => handleFieldChange("bio", e.target.value)}
               />
             )}
@@ -338,7 +344,7 @@ const Profile = () => {
                   <TextField
                     variant="standard"
                     value={data.first_name}
-                    sx={{ width: 300 }}
+                    fullWidth
                     onChange={(e) =>
                       handleFieldChange("first_name", e.target.value)
                     }
@@ -359,7 +365,7 @@ const Profile = () => {
                   <TextField
                     variant="standard"
                     value={data.last_name}
-                    sx={{ width: 300 }}
+                    fullWidth
                     onChange={(e) =>
                       handleFieldChange("last_name", e.target.value)
                     }
@@ -380,7 +386,7 @@ const Profile = () => {
                   <TextField
                     variant="standard"
                     value={data.username}
-                    sx={{ width: 300 }}
+                    fullWidth
                     onChange={(e) =>
                       handleFieldChange("username", e.target.value)
                     }
@@ -401,7 +407,7 @@ const Profile = () => {
                   <TextField
                     variant="standard"
                     value={data.email}
-                    sx={{ width: 300 }}
+                    fullWidth
                     onChange={(e) => handleFieldChange("email", e.target.value)}
                   />
                 )}
@@ -425,7 +431,7 @@ const Profile = () => {
                   <TextField
                     variant="standard"
                     value={data.birth_date.toString()}
-                    sx={{ width: 300 }}
+                    fullWidth
                     onChange={(e) =>
                       handleFieldChange("birth_date", e.target.value)
                     }
@@ -525,22 +531,36 @@ const Profile = () => {
                       Password
                     </Typography>
                     {!editingMode ? (
-                      <Typography>{data.first_name}</Typography>
+                      <></>
                     ) : (
-                      <TextField
+                      <Input
                         error={isEditError}
-                        helperText={isEditError ? "Incorrect Password" : ""}
-                        type="password"
-                        variant="standard"
-                        sx={{ width: 300 }}
+                        // helperText={isEditError ? "Incorrect Password" : ""}
+                        type={showPassword ? "text" : "password"}
+                        // variant="standard"
+                        fullWidth
                         onChange={(e) =>
                           handleFieldChange("password", e.target.value)
+                        }
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={()=>{setShowPassword(prev => !prev)}}
+                              
+                            >
+                              {showPassword ? <Visibility /> : <VisibilityOff />}
+                            </IconButton>
+                          </InputAdornment>
                         }
                       />
                     )}
                   </div>
+                  <div className="flex flex-col space-x-0 space-y-2 mt-4 md:flex-row md:space-x-4 md:space-y-0 md:mt-0">
+
                   <Button
                     variant="contained"
+                    fullWidth
                     startIcon={putUserMutation.isLoading ? "" : <SaveIcon />}
                     onClick={handleSaveClick}
                     disabled={data.password.length < 8}
@@ -551,6 +571,19 @@ const Profile = () => {
                       ("Save" as React.ReactNode)
                     )}
                   </Button>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={()=> setEditingMode(false)}
+                    color="secondary"
+                  >
+                    {putUserMutation.isLoading ? (
+                      <CircularProgress size={30} style={customStyles} />
+                    ) : (
+                      ("Cancel" as React.ReactNode)
+                    )}
+                  </Button>
+                  </div>
                 </>
               )}
             </div>
