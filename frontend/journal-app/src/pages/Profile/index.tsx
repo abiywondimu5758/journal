@@ -530,6 +530,7 @@ const Profile = () => {
                       <TextField
                         error={isEditError}
                         helperText={isEditError ? "Incorrect Password" : ""}
+                        type="password"
                         variant="standard"
                         sx={{ width: 300 }}
                         onChange={(e) =>
