@@ -56,7 +56,7 @@ class CustomUserListCreateView(generics.CreateAPIView):
                 return Response({'detail': 'An error occurred while creating the user.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class CustomUserDetailView(generics.RetrieveUpdateAPIView):
+class CustomUserDetailView(generics.RetrieveDestroyAPIView):
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -66,10 +66,6 @@ class CustomUserDetailView(generics.RetrieveUpdateAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-    def perform_update(self, serializer):
-        # Override the perform_update method to update the user without requiring the password
-        serializer.save(password=self.request.user.password)
         return Response(serializer.data)
 
 class CustomUserUpdateView(generics.UpdateAPIView):

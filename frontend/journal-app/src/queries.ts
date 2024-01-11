@@ -24,7 +24,7 @@ export const useLogin = (): {
   loginMutation: UseMutationResult<
     LoginResponse,
     unknown,
-    { username: string; password: string },
+   FormData,
     unknown
   >;
   isLoggedIn: boolean;
@@ -37,9 +37,9 @@ export const useLogin = (): {
   const loginMutation = useMutation<
     LoginResponse,
     unknown,
-    { username: string; password: string }
+    FormData
   >(
-    (credentials: { username: string; password: string }) => {
+    (credentials: FormData) => {
       if (isLoggedIn) {
         // User is already logged in, return the existing tokens
         return Promise.resolve({
@@ -54,9 +54,9 @@ export const useLogin = (): {
           fetch("http://127.0.0.1:8000/api/v1/token/", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+              // "Content-Type": "application/x-www-form-urlencoded",
             },
-            body: JSON.stringify(credentials),
+            body: credentials,
           }).then((response) => {
             if (!response.ok) {
               reject(new Error("Login failed")); // Handle non-2xx responses if needed
@@ -116,7 +116,7 @@ export const useRegister = () => {
       email: string;
       username: string;
       password: string;
-
+      birth_date: string;
       // Add other registration fields as needed
     }) =>
       new Promise((resolve, reject) => {
@@ -320,25 +320,16 @@ export const useUser = () => {
 export const usePutUser = () => {
   const queryClient = useQueryClient();
   return useMutation(
-    async (updatedUser: {
-      first_name: string;
-      last_name: string;
-      username: string;
-      email: string;
-      birth_date: Date;
-      password: string;
-      bio: string;
-      avatar: unknown ;
-    }) => {
+    async (formData: FormData) => {
       const accessToken = cookies.get("access_token");
       const headers = {
-        'Content-Type': 'multipart/form-data',
+        // 'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
       };
       const response = await fetch("http://127.0.0.1:8000/api/v1/user/update/", {
         method: "PUT",
         headers,
-        body: JSON.stringify(updatedUser),
+        body: formData,
       });
       if (!response.ok) {
         console.log(response.body);
@@ -353,5 +344,205 @@ export const usePutUser = () => {
       },
 
     }
+  );
+};
+
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+
+  const deleteUserMutation = useMutation(
+    async () => {
+      const accessToken = cookies.get("access_token");
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/v1/user/`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete entry");
+      }
+      const responseData = await response.text();
+      return responseData.trim().length > 0 ? JSON.parse(responseData) : {};
+    },
+    {
+      onSuccess: () => {
+        // Invalidate and refetch the 'user' query after successful deletion
+        queryClient.invalidateQueries("user");
+      },
+    }
+  );
+  return deleteUserMutation;
+};
+
+export const usePostForgotPassword = () => {
+  return useMutation(
+    async (formData:FormData) => {
+      // const accessToken = cookies.get("access_token");
+      const headers = {
+        // "Content-Type": "application/json",
+        // Authorization: `Bearer ${accessToken}`,
+      };
+
+      return new Promise((resolve, reject) => {
+        // Simulate a delay of 3 seconds
+        setTimeout(async () => {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/v1/forgot-password/`, // Make sure to include the entry ID or whatever identifier is needed
+            {
+              method: "POST",
+              headers,
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            reject(new Error("Failed to send otp"));
+          }
+
+          resolve(response.json());
+        }, 3000); // 3-second delay
+      });
+    },
+    
+  );
+};
+
+export const usePostVerifyOtp = () => {
+  return useMutation(
+    async (formData:FormData) => {
+      // const accessToken = cookies.get("access_token");
+      const headers = {
+        // "Content-Type": "application/json",
+        // Authorization: `Bearer ${accessToken}`,
+      };
+
+      return new Promise((resolve, reject) => {
+        // Simulate a delay of 3 seconds
+        setTimeout(async () => {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/v1/verify-forgot-password/`, // Make sure to include the entry ID or whatever identifier is needed
+            {
+              method: "POST",
+              headers,
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            reject(new Error("Failed to verify otp"));
+          }
+
+          resolve(response.json());
+        }, 3000); // 3-second delay
+      });
+    },
+    
+  );
+};
+
+export const usePostChangePassword = () => {
+  return useMutation(
+    async (formData:FormData) => {
+      // const accessToken = cookies.get("access_token");
+      const headers = {
+        // "Content-Type": "application/json",
+        // Authorization: `Bearer ${accessToken}`,
+      };
+
+      return new Promise((resolve, reject) => {
+        // Simulate a delay of 3 seconds
+        setTimeout(async () => {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/v1/change-forgot-password/`, // Make sure to include the entry ID or whatever identifier is needed
+            {
+              method: "POST",
+              headers,
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            reject(new Error("Failed to change password"));
+          }
+
+          resolve(response.json());
+        }, 3000); // 3-second delay
+      });
+    },
+    
+  );
+};
+
+export const useEmailVerificationOtp = () => {
+  return useMutation(
+    async (formData:FormData) => {
+      const accessToken = cookies.get("access_token");
+      const headers = {
+        // "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      return new Promise((resolve, reject) => {
+        // Simulate a delay of 3 seconds
+        setTimeout(async () => {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/v1/generate-otp/`, // Make sure to include the entry ID or whatever identifier is needed
+            {
+              method: "POST",
+              headers,
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            reject(new Error("Failed to generate otp"));
+          }
+
+          resolve(response.json());
+        }, 3000); // 3-second delay
+      });
+    },
+    
+  );
+};
+
+export const useVerifyEmail = () => {
+  return useMutation(
+    async (formData:FormData) => {
+      const accessToken = cookies.get("access_token");
+      const headers = {
+        // "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      return new Promise((resolve, reject) => {
+        // Simulate a delay of 3 seconds
+        setTimeout(async () => {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/v1/verify-otp/`, // Make sure to include the entry ID or whatever identifier is needed
+            {
+              method: "POST",
+              headers,
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            reject(new Error("Failed to verify email"));
+          }
+
+          resolve(response.json());
+        }, 3000); // 3-second delay
+      });
+    },
+    
   );
 };

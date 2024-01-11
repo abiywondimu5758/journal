@@ -14,6 +14,8 @@ import Entries from "./pages/entries";
 import CreateEntries from "./pages/Journal/CreateEntries";
 import ProtectedRoute from "./ProtectedRoutes";
 import Profile from "./pages/Profile";
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 function App() {
   const preferedSettings = useMediaQuery("(prefers-color-scheme: dark)");
@@ -24,7 +26,7 @@ function App() {
   };
 
   return (
-    <>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
       <ThemeProvider theme={MuiTheme(mode)}>
         <CssBaseline />
         <Routes>
@@ -78,7 +80,7 @@ function App() {
           {/* Add more routes as needed */}
         </Routes>
       </ThemeProvider>
-    </>
+      </LocalizationProvider>
   );
 }
 

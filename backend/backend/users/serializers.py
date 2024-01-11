@@ -16,7 +16,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'first_name', 'last_name', 'username',
-                  'email', 'birth_date', 'password', 'bio', 'avatar', 'date_joined','otp_validated', 'last_login','otp_forgot_pass')
+                  'email', 'birth_date', 'password', 'bio', 'avatar', 'date_joined','otp_validated', 'last_login','otp_forgot_pass','otp_secret')
 
     def create(self, validated_data):
         # Custom logic to create a user with a hashed password

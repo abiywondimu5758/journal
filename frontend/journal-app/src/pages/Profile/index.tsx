@@ -11,18 +11,17 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-// import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
-import { usePutUser, useUser } from "../../queries";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import { useDeleteUser, useEmailVerificationOtp, useLogout, usePutUser, useUser, useVerifyEmail } from "../../queries";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { deepOrange } from "@mui/material/colors";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import { useEffect, useState } from "react";
 
-// import type { UploadProps } from 'antd';
-// import { message } from 'antd';
-
-
+import type { UploadProps } from "antd";
+import { Upload } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const customStyles = {
@@ -30,14 +29,47 @@ const Profile = () => {
   };
   const { data: user, isLoading, isError } = useUser();
   const putUserMutation = usePutUser();
+  const deleteUserMutation = useDeleteUser();
+  const logoutMutation = useLogout();
+  const generateOtp = useEmailVerificationOtp();
+  const verifyEmail = useVerifyEmail();
+  const navigate = useNavigate();
 
   const [editingMode, setEditingMode] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isEditError, setIsEditError] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [isDeleteError, setIsDeleteError] = useState(false);
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [isGeneratingSuccess, setIsGeneratingSuccess] = useState(false);
+  const [isGeneratingError, setIsGeneratingError] = useState(false);
+  const [otp,setOtp] = useState('');
+  const [isVerifyingSuccess, setIsVerifyingSuccess] = useState(false);
+  const [isVerifyingError, setIsVerifyingError] = useState(false);
 
   // const passwordRef = useRef<HTMLInputElement>(null);
   // const bioRef = useRef<HTMLInputElement>();
   // const avatarRef = useRef<HTMLInputElement>();
+  const props: UploadProps = {
+    name: "file",
+    action: "https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188",
+    headers: {
+      authorization: "authorization-text",
+    },
+    onChange(info) {
+      if (info.file.status !== "uploading") {
+        console.log(info.file, info.fileList);
+      }
+      if (info.file.status === "done") {
+        setFile(info.file?.originFileObj || null);
+
+        // message.success(`${info.file.name} file uploaded successfully`);
+      } else if (info.file.status === "error") {
+        // message.error(`${info.file.name} file upload failed.`);
+        return;
+      }
+    },
+  };
 
   const [data, setData] = useState({
     first_name: "",
@@ -47,29 +79,11 @@ const Profile = () => {
     birth_date: Date,
     password: "",
     bio: "",
-    avatar: null as unknown || null,
+    avatar: "",
     date_joined: "",
     otp_validated: "",
     last_login: "",
   });
-  // const props: UploadProps = {
-  //   name: 'file',
-  //   action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
-  //   headers: {
-  //     authorization: 'authorization-text',
-  //   },
-  //   onChange(info) {
-  
-  //     if (info.file.status === 'done') {
-  //       setData({ ...data, avatar: info.file.response });
-  //       message.success(`${info.file.name} file uploaded successfully`);
-  //     } else if (info.file.status === 'error') {
-  //       message.error(`${info.file.name} file upload failed.`);
-  //     }
-  //   },
-  // };
-
-
 
   const handleEditingMode = () => {
     setEditingMode((prev) => !prev);
@@ -92,7 +106,7 @@ const Profile = () => {
       });
     }
   }, [isLoading, isError, user]);
-  if (isLoading) {
+  if (isLoading || deleteUserMutation.isLoading || logoutMutation.isLoading) {
     return (
       <div className="flex flex-col items-center h-screen ">
         <CircularProgress size={30} />
@@ -100,12 +114,14 @@ const Profile = () => {
     );
   }
 
-  if (isError || !user) {
+  if (isError || deleteUserMutation.isError || logoutMutation.isError) {
     return (
       <>
-        <div className="flex flex-col items-center h-screen ">
+        <div className="flex flex-col items-center h-screen">
           <Alert severity="error" sx={{ width: "100%" }}>
-            Couldn't Load Profile!
+            {isError && <>Couldn't Load Profile!</>}
+            {deleteUserMutation.isError && <>Couldn't delete user</>}
+            {logoutMutation.isError && <>Couldn't Logout</>}
           </Alert>
         </div>
         {/* <Snackbar open={isError} autoHideDuration={60}>
@@ -117,18 +133,6 @@ const Profile = () => {
     );
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-
-    // Ensure it's an image file
-    if (file && file.type.startsWith('image/')) {
-      setData({ ...data, avatar: file });
-    } else {
-      // Handle invalid file type (if needed)
-      console.error('Invalid file type. Please select an image file.');
-    }
-  };
-
   const handleFieldChange = (fieldName: string, value: string) => {
     setData({ ...data, [fieldName]: value });
   };
@@ -138,43 +142,77 @@ const Profile = () => {
       // const birthDateValue = Date.now();
       // const passwordValue = passwordRef.current?.value || "";
       // Assuming you have the updated entry data in a variable called 'updatedEntry'
-      const updatedUser = {
-        first_name: data.first_name,
-        last_name: data.last_name,
-        username: data.username,
-        email: data.email,
-        birth_date: user.birth_date,
-        password: data.password,
-        bio: data.bio,
-        avatar: data.avatar
-      };
-      console.log(updatedUser);
+      const formData = new FormData();
+      formData.append("first_name", data.first_name);
+      formData.append("last_name", data.last_name);
+      formData.append("username", data.username);
+      formData.append("email", data.email);
+      formData.append("birth_date", data.birth_date.toString());
+      formData.append("password", data.password);
+      formData.append("bio", data.bio);
+      formData.append("avatar", file || "");
+
       // Call the mutate function with the updated entry data
-      const response = await putUserMutation.mutateAsync(updatedUser);
+      const response = await putUserMutation.mutateAsync(formData);
 
       if (response.ok) {
         setIsSuccess(true);
         setEditingMode(false);
-      }
-      else {
+      } else {
         setIsEditError(true);
       }
     } catch (error) {
       setIsEditError(true);
     }
-
-    
+  };
+  const handleDelete = async () => {
+    try {
+      await (await deleteUserMutation).mutateAsync().then(() => {
+        setIsSuccess(true);
+        logoutMutation.mutate();
+        navigate("/login");
+      });
+    } catch (error) {
+      setIsDeleteError(true);
+    }
   };
 
+  const handleVerifyBtn = () => {
+    const formData = new FormData();
+    generateOtp.mutate(formData,{
+      onError: () => {
+        setIsGeneratingError(true);
+      },
+      onSuccess: () => {
+        setIsVerifyingEmail(true);
+        setIsGeneratingSuccess(true)
+      }
+    });
+  }
+
+  const handleVerification = () => {
+    const formData = new FormData();
+    formData.append('otp',otp);
+    verifyEmail.mutate(formData,{
+      onError: () => {
+        setIsVerifyingError(true);
+      },
+      onSuccess: () => {
+        setIsVerifyingSuccess(true);
+        setIsVerifyingEmail(false);
+      }
+    });
+  }
+
   return (
-    <div className="flex flex-col items-center h-fit space-y-8">
+    <div className="flex flex-col items-center h-fit space-y-8 p-10">
       <div className="flex flex-row justify-between items-center w-full">
         <div className="flex space-x-4 items-center">
           <ArrowBackIcon />
           <Avatar
             alt="Remy Sharp"
             sx={{ width: 50, height: 50, bgcolor: deepOrange[500] }}
-            src={data.avatar}
+            src={file ? URL.createObjectURL(file) : data.avatar}
           >
             {data.first_name.charAt(0)}
             {data.last_name.charAt(0)}
@@ -192,7 +230,7 @@ const Profile = () => {
             </div>
             {!editingMode ? (
               <Typography variant="subtitle2" color="grey">
-                {data.bio}
+                {data.bio.length > 0 ? data.bio : "Update bio here"}
               </Typography>
             ) : (
               <TextField
@@ -212,10 +250,32 @@ const Profile = () => {
                 <span>Email verified</span>
               </div>
             ) : (
-              "Email not verified"
+              <div className="flex flex-col items-center space-y-1">
+                {isVerifyingEmail && <span>Email not verified</span>}{" "}
+                {!isVerifyingEmail ? (
+                  <span className="text-primaryPink font-semibold" onClick={handleVerifyBtn}>
+                    {generateOtp.isLoading ? <CircularProgress size={30} /> :<>verify here</>}
+                  </span>
+                ) : (
+                  <div className="flex items-center space-x-1">
+                    <TextField
+                      variant="standard"
+                      defaultValue=''
+                      sx={{ width: 300 }}
+                      onChange={(e) =>
+                        setOtp(e.target.value)
+                      }
+                    />
+                    <Button onClick={handleVerification} disabled={otp.length < 5}>{verifyEmail.isLoading ? <CircularProgress size={30} /> :<>Verify</>}</Button>
+                  </div>
+                )}{" "}
+              </div>
             )}
           </Typography>
-          <div className="w-28 h-12 dark:bg-primaryPink bg-white rounded-md flex items-center px-4 space-x-1">
+          <div
+            className="w-28 h-12 dark:bg-primaryPink bg-white rounded-md flex items-center px-4 space-x-1"
+            onClick={handleDelete}
+          >
             <DeleteForever sx={{ color: "#FFFFFF" }} />
             <Typography variant="subtitle1" sx={{ color: "#FFFFFF" }}>
               Delete
@@ -231,21 +291,28 @@ const Profile = () => {
           </Typography>
           <div className="w-80 h-72 bg-gray-500 flex items-center rounded-lg">
             {" "}
-            <img src={data.avatar} className="w-full h-full rounded-lg" />
+            <img
+              src={file ? URL.createObjectURL(file) : data.avatar}
+              className="w-full h-full rounded-lg"
+              alt="Upload profile picture"
+            />
           </div>
-          {/* <Upload {...props}>
-          <div
-            className="flex items-center space-x-2 "
-            onClick={() => console.log("hi")}
-          >
-            <InsertPhotoIcon sx={{ color: "#FF007A" }} />
-            <Typography variant="subtitle1" sx={{ color: "#FF007A" }}>
-              {" "}
-              Change Profile Image{" "}
-            </Typography>
-          </div>
-          </Upload> */}
-          <input type="file" onChange={handleFileChange} />
+          {editingMode ? (
+            <Upload {...props}>
+              <div
+                className="flex items-center space-x-2 "
+                onClick={() => console.log("hi")}
+              >
+                <InsertPhotoIcon sx={{ color: "#FF007A" }} />
+                <Typography variant="subtitle1" sx={{ color: "#FF007A" }}>
+                  {" "}
+                  Change Profile Image{" "}
+                </Typography>
+              </div>
+            </Upload>
+          ) : (
+            <></>
+          )}
         </div>
         <Grid
           container
@@ -462,7 +529,7 @@ const Profile = () => {
                     ) : (
                       <TextField
                         error={isEditError}
-                        helperText= {isEditError ? "Incorrect Password": ""}
+                        helperText={isEditError ? "Incorrect Password" : ""}
                         variant="standard"
                         sx={{ width: 300 }}
                         onChange={(e) =>
@@ -473,16 +540,15 @@ const Profile = () => {
                   </div>
                   <Button
                     variant="contained"
-                    startIcon={putUserMutation.isLoading ? '':<SaveIcon />}
+                    startIcon={putUserMutation.isLoading ? "" : <SaveIcon />}
                     onClick={handleSaveClick}
                     disabled={data.password.length < 8}
                   >
                     {putUserMutation.isLoading ? (
-                <CircularProgress size={30} style={customStyles}/>
-              ) : (
-                ("Save" as React.ReactNode)
-              )}
-                    
+                      <CircularProgress size={30} style={customStyles} />
+                    ) : (
+                      ("Save" as React.ReactNode)
+                    )}
                   </Button>
                 </>
               )}
@@ -490,22 +556,69 @@ const Profile = () => {
           </Grid>
         </Grid>
       </div>
-
       <Snackbar
         open={isSuccess}
         autoHideDuration={6000}
         onClose={() => setIsSuccess(false)}
       >
         <Alert severity="success" sx={{ width: "100%" }}>
-          successfully Edited!
+          Profile edited successfully!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={isEditError}
+        autoHideDuration={6000}
+        onClose={() => setIsEditError(false)}
+      >
+        <Alert severity="error" sx={{ width: "100%" }}>
+          Error while editing profile!
+        </Alert>
+      </Snackbar>
+      
+      <Snackbar open={isDeleteError} autoHideDuration={6}>
+        <Alert severity="error" sx={{ width: "100%" }}>
+          Error while deleting entry!
         </Alert>
       </Snackbar>
 
-      <Snackbar open={isEditError} autoHideDuration={6000} onClose={() => setIsEditError(false)}>
-          <Alert severity="error" sx={{ width: "100%" }}>
-            Couldn't Edit user!
-          </Alert>
-        </Snackbar>;
+      <Snackbar
+        open={isGeneratingSuccess}
+        autoHideDuration={6000}
+        onClose={() => setIsGeneratingSuccess(false)}
+      >
+        <Alert severity="success" sx={{ width: "100%" }}>
+          Code sent to email, Please verify it!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={isGeneratingError}
+        autoHideDuration={6000}
+        onClose={() => setIsGeneratingError(false)}
+      >
+        <Alert severity="error" sx={{ width: "100%" }}>
+          Error while sending code to email!
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={isVerifyingSuccess}
+        autoHideDuration={6000}
+        onClose={() => setIsVerifyingSuccess(false)}
+      >
+        <Alert severity="success" sx={{ width: "100%" }}>
+          Email verified successfully!
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={isVerifyingError}
+        autoHideDuration={6000}
+        onClose={() => setIsVerifyingError(false)}
+      >
+        <Alert severity="error" sx={{ width: "100%" }}>
+          Error while verifying email!
+        </Alert>
+      </Snackbar>
+      
     </div>
   );
 };

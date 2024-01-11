@@ -34,7 +34,7 @@ import { useState } from "react";
 import DashboardContent from "./DashboardContent";
 import JournalContent from "../Journal";
 import { tw } from "typewind";
-import { useLogout } from "../../queries";
+import { useLogout, useUser } from "../../queries";
 import { useNavigate } from "react-router-dom";
 import Profile from "../Profile";
 
@@ -70,7 +70,11 @@ interface DropdownMenuProps {
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({ handleLogout }) => {
+  const customStyles = {
+    color: "#ffffff",
+  };
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { data: user, isLoading, isError } = useUser();
   const navigate = useNavigate();
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -87,11 +91,17 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ handleLogout }) => {
   return (
     <>
       <IconButton color="inherit" onClick={handleClick}>
-        <Avatar
+        {user != undefined && <Avatar
           alt="Remy Sharp"
-          src="/Hero.jpg"
-          sx={{ width: 30, height: 30 }}
-        />
+          src= {user.avatar}
+          sx={{ width: 30, height: 30 }}>            {user.first_name.charAt(0)}
+          {user.last_name.charAt(0)}</Avatar>}
+        {
+          isLoading && <CircularProgress size={30} style={customStyles}/>
+        }
+        {
+          isError && <p>Error</p>
+        }
       </IconButton>
       <Menu
         anchorEl={anchorEl}
