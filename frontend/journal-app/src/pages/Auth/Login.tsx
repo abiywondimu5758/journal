@@ -51,6 +51,7 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfPassword, setShowConfPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoginError, setIsLoginError] = useState(false);
   const [emptyValue, setEmptyValue] = useState(false);
@@ -186,6 +187,12 @@ const Login = () => {
             setIsForgotPassword(false);
             setIsSetPassword(false);
             setEmptyValue(false);
+            setUsername('');
+            setPassword('');
+            setEmail('');
+            setOtp('');
+            setNewPassword('');
+            setConfirmPassword('');
           },
         });
       } else {
@@ -228,8 +235,11 @@ const Login = () => {
             <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
               <LockOutlinedIcon />
             </Avatar>
-            <Typography component="h1" variant="h5">
-              {!isForgotPassword ? "Sign in" : "Enter Email"}
+            <Typography component="h1" variant="h6">
+              {!isForgotPassword && !isVerifyOtp && !isSetPassword && "Sign In" }
+              {isForgotPassword && !isVerifyOtp && !isSetPassword && "Enter Email"}
+              {!isForgotPassword && isVerifyOtp && !isSetPassword && "Enter Code Sent To Your Email"}
+              {!isForgotPassword && !isVerifyOtp && isSetPassword && "Set New Password"}
             </Typography>
             {!isForgotPassword && !isVerifyOtp && !isSetPassword ? (
               <Box
@@ -245,6 +255,7 @@ const Login = () => {
                   id="username"
                   label="Username"
                   autoComplete="username"
+                  value={username}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     setUsername(event.target.value)
                   }
@@ -260,7 +271,7 @@ const Login = () => {
                   id="password"
                   label="Password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  value={password}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(event.target.value)
                   }
@@ -346,6 +357,7 @@ const Login = () => {
                   label="Email"
                   type="email"
                   autoComplete="email"
+                  value={email}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     setEmail(event.target.value)
                   }
@@ -384,7 +396,7 @@ const Login = () => {
                   id="otp"
                   label="OTP"
                   type={showPassword ? "text" : "password"}
-                  defaultValue=""
+                  value={otp}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -436,12 +448,27 @@ const Login = () => {
                   fullWidth
                   id="newPassword"
                   label="New Password"
-                  type="password"
-                  defaultValue=""
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => {
+                            setShowPassword((prev) => !prev);
+                          }}
+                        >
+                          {showPassword ? <Visibility /> : <VisibilityOff />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     setNewPassword(event.target.value)
                   }
-                  autoFocus
+                  
                   error={doesPasswordsMatch}
                   helperText={
                     doesPasswordsMatch ? "Passwords do not match" : ""
@@ -453,7 +480,23 @@ const Login = () => {
                   fullWidth
                   id="confirmPassword"
                   label="Confirm Password"
-                  type="password"
+                  type={showConfPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => {
+                            setShowConfPassword((prev) => !prev);
+                          }}
+                        >
+                          {showConfPassword ? <Visibility /> : <VisibilityOff />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     setConfirmPassword(event.target.value)
                   }
@@ -470,13 +513,13 @@ const Login = () => {
                   sx={{ mt: 3, mb: 2 }}
                   onClick={handlePasswordChange}
                   disabled={
-                    loginMutation.isLoading ||
-                    newPassword.length < 8 ||
+                    changePass.isLoading ||
+                    
                     confirmPassword.length < 8
                   }
                 >
                   {" "}
-                  {loginMutation.isLoading ? (
+                  {changePass.isLoading ? (
                     <CircularProgress size={30} />
                   ) : (
                     ("Update Password" as React.ReactNode)
