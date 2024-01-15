@@ -37,6 +37,7 @@ import { tw } from "typewind";
 import { useLogout, useUser } from "../../queries";
 import { useNavigate } from "react-router-dom";
 import Profile from "../Profile";
+import BooksContent from "../Books";
 
 interface listItem {
   primary: string;
@@ -144,7 +145,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ handleLogout }) => {
   );
 };
 
-const AppBar = styled(MuiAppBar, {
+export const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
@@ -205,6 +206,8 @@ export default function Dashboard({ mode, setMode }: props) {
     switch (selectedItem) {
       case "Dashboard":
         return <DashboardContent />;
+      case "Books":
+        return <BooksContent />;
       case "Journal":
         return <JournalContent />;
       case "Profile":

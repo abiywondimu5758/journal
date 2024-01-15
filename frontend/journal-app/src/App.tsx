@@ -16,6 +16,7 @@ import ProtectedRoute from "./ProtectedRoutes";
 import Profile from "./pages/Profile";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import BookSearch from "./pages/Books/BooksAdd";
 
 function App() {
   const preferedSettings = useMediaQuery("(prefers-color-scheme: dark)");
@@ -71,6 +72,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Searchbook"
+            element={
+              <ProtectedRoute>
+                <BookSearch mode={mode} setMode={handleModeChange}/>
               </ProtectedRoute>
             }
           />
