@@ -27,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 interface props {
     mode: boolean;
     setMode: () => void;
+    title: string;
   }
 
 interface AppBarProps extends MuiAppBarProps {
@@ -120,7 +121,7 @@ export const AppBar1 = styled(MuiAppBar, {
   }));
 
 
-const AppBar = ({ mode, setMode }: props) => {
+const AppBar = ({ mode, setMode, title }: props) => {
     
   const { mutate: logout, isLoading, isError } = useLogout();
   const navigate = useNavigate();
@@ -173,7 +174,7 @@ const AppBar = ({ mode, setMode }: props) => {
         noWrap
         sx={{ flexGrow: 1 }}
       >
-        Dashboard
+        {title}
       </Typography>
       <IconButton color="inherit">
         <Badge badgeContent={4} color="primary">
