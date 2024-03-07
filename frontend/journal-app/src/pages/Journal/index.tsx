@@ -47,6 +47,7 @@ const JournalContent = () => {
     try {
       await (await deleteEntryMutation).mutateAsync(entryId).then(() => {
         setIsSuccess(true);
+
       });
     } catch (error) {
       setIsDelError(true);
